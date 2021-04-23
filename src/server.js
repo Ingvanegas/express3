@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var helmet = require('helmet');
 var rateLimit = require('express-rate-limit');
+var authentication = require('./authentication');
 
 var apiLimiterLogin = rateLimit({
     max: 10
@@ -21,15 +22,31 @@ server.get('/', (req, res) => {
     res.send('Bienvenidos a mi api de express');
 });
 
+server.get('/users', (req, res) => {
+    const userverified = authentication.verifyUser(req, res, usuarios);
+    if(userverified) {
+        res.send(usuarios);   
+    }else {
+        res.send('Error: ah ocurrido un problema con el token');   
+    }   
+})
+
 server.post('/login', (req, res) => {
     var arg = req.body;
     var userName = arg.user;
     var password = arg.password;
     var isAutenticated = usuarios.filter(user => user.user === userName && user.password === password);
     if(isAutenticated.length > 0) {
-        res.send('OK');
+        var data = { userName, password };
+        var token = authentication.generateToken(data);
+        res.send({
+            result: 'OK',
+            token
+        });
     }else {
-        res.send('ERROR');
+        res.send({
+            result: 'ERROR'
+        });
     }
 });
 
@@ -43,16 +60,6 @@ server.post('/register', (req, res) => {
     usuarios.push(arg);
     res.send(arg);
 });
-
-function validateContraseña(password) {
-    var Mayusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    var Numeros = '1234567890';
-    var Minusculas = 'abcdefghijklmnopqrstuvwxyz';
-    for (let index = 0; index < password.length; index++) {
-        const caracter = password[index];
-        var contieneMayuscula = Mayusculas.includes(caracter);
-    }
-}
 
 function validateEmail(email) {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
