@@ -8,7 +8,7 @@ var apiLimiterLogin = rateLimit({
     max: 1000
 });
 
-var port = 3001;
+var port = 3000;
 
 var server = express();
 
@@ -18,7 +18,7 @@ server.use('/', apiLimiterLogin);
 
 
 server.get('/', (req, res) => {
-    res.send('Bienvenidos a mi api de express');
+    res.send('Bienvenidos a mi nueva api de express');
 });
 
 
