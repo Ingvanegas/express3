@@ -1,19 +1,19 @@
 server.get('/clients', (req, res) => {
-    res.send({});
+    res.send();
 });
 
 server.get('/client/.idClient', (req, res) => {
-    res.send({});
+    res.send();
 });
 
 server.post('/client', (req, res) => {
-    res.send({});
+    res.send();
 });
 
 server.put('/client/.idClient', (req, res) => {
-    res.send({});
+    res.send();
 });
 
 server.delet('/client/.idClient', (req, res) => {
-    res.send({});
+    res.send();
 });
