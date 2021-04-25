@@ -1,16 +1,16 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var helmet = require('helmet');
-var rateLimit = require('express-rate-limit');
-var authentication = require('./authentication');
+const express = require('express');
+const bodyParser = require('body-parser');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const authentication = require('./authentication');
 
-var apiLimiterLogin = rateLimit({
+const apiLimiterLogin = rateLimit({
     max: 1000
 });
 
-var port = 3000;
+const port = 3000;
 
-var server = express();
+const server = express();
 
 server.use(helmet());
 server.use(bodyParser());
