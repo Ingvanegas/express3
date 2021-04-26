@@ -26,7 +26,12 @@ server.get('/', (req, res) => {
 
 
 server.get('/clients', (req, res) => {
-    res.send({});
+const userverified = authentication.verifyUser(req, res, usuarios);
+if (userverified) {
+    res.send(usuarios);
+} else {
+    res.send('Errror: ha ocurrido un problema con el token');
+}
 });
 
 server.get('/client/.idClient', (req, res) => {
@@ -34,7 +39,22 @@ server.get('/client/.idClient', (req, res) => {
 });
 
 server.post('/client', (req, res) => {
-    res.send({});
+    var arg = req.body;
+    var userName = arg.user;
+    var password = arg.Password;
+    const userverified = authentication.verifyUser(req,res,usuarios);
+    if (userverified) {
+        var data = { userName, password};
+        var token = authentication.sing(data);
+        res.send ({
+            result: 'OK',
+            token
+        });
+    } else {
+        res.send({
+            result: 'ERROR'
+        });
+    }
 });
 
 server.put('/client/.idClient', (req, res) => {

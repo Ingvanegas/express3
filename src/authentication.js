@@ -23,8 +23,8 @@ module.exports.verifyUser = function(req, res, usuarios) {
             }else {
                 return false;
             }
-        }   
+        }
     }else {
         return false;
-    } 
+    }
 }
