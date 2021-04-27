@@ -22,7 +22,26 @@ server.get('/', (req, res) => {
     res.send('Bienvenidos a mi nueva api de express');
 });
 
+server.post ('/login', (req, res)=>{
+    var arg = req.body;
+    var userName = arg.user;
+    var password = arg.Password;
+    const userverified = authentication.verifyUser(req,res,usuarios);
+    if (userverified) {
+        var data = { userName, password};
+        var token = authentication.sing(data);
+        res.send ({
+            result: 'OK',
+            token
+        });
+    } else {
+        res.send({
+            result: 'ERROR'
+        });
+    }
+}
 
+)
 
 
 
@@ -40,22 +59,7 @@ server.get('/client/.idClient', (req, res) => {
 });
 
 server.post('/client', (req, res) => {
-    var arg = req.body;
-    var userName = arg.user;
-    var password = arg.Password;
-    const userverified = authentication.verifyUser(req,res,usuarios);
-    if (userverified) {
-        var data = { userName, password};
-        var token = authentication.sing(data);
-        res.send ({
-            result: 'OK',
-            token
-        });
-    } else {
-        res.send({
-            result: 'ERROR'
-        });
-    }
+    res.sendStatus({});
 });
 
 server.put('/client/.idClient', (req, res) => {
@@ -65,6 +69,8 @@ server.put('/client/.idClient', (req, res) => {
 server.delete('/client/.idClient', (req, res) => {
     res.send({});
 });
+
+
 
 
 
@@ -93,6 +99,7 @@ server.delete('/order/.idOrder', (req, res) => {
 
 
 
+
 server.get('/detailproducts/.idOrder', (req, res) => {
     res.send({});
 });
@@ -112,6 +119,7 @@ server.put('/detailproducts/.idDetailProduct', (req, res) => {
 server.delete('/detailproducts/.idDetailProduct', (req, res) => {
     res.send({});
 });
+
 
 
 
