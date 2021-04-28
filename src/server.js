@@ -4,6 +4,12 @@ var helmet = require('helmet');
 var rateLimit = require('express-rate-limit');
 var authentication = require('./authentication');
 
+var manager = require('./database/manager/manager');
+var actions = require('./database/actions/actions');
+
+var menuModel = require('./database/models/menuModel');
+var userModel = require('./database/models/userModel');
+
 var apiLimiterLogin = rateLimit({
     max: 10
 });
@@ -16,25 +22,22 @@ server.use(helmet());
 server.use(bodyParser());
 server.use('/', apiLimiterLogin);
 
-var usuarios = [];
+manager.connect();
 
 server.get('/', (req, res) => {
     res.send('Bienvenidos a mi api de express');
 });
 
-server.get('/users', (req, res) => {
-    const userverified = authentication.verifyUser(req, res, usuarios);
-    if(userverified) {
-        res.send(usuarios);   
-    }else {
-        res.send('Error: ah ocurrido un problema con el token');   
-    }   
+server.get('/users', authentication.verifyUser, async (req, res) => {
+    const usuarios = await actions.get(userModel.model);
+    res.send(usuarios); 
 })
 
-server.post('/login', (req, res) => {
+server.post('/login', async (req, res) => {
     var arg = req.body;
     var userName = arg.user;
     var password = arg.password;
+    const usuarios = await actions.get(userModel.model);
     var isAutenticated = usuarios.filter(user => user.user === userName && user.password === password);
     if(isAutenticated.length > 0) {
         var data = { userName, password };
@@ -50,15 +53,36 @@ server.post('/login', (req, res) => {
     }
 });
 
-server.post('/register', (req, res) => {
+server.post('/register', async (req, res) => {
     var arg = req.body;
-
-    if(!validateEmail(arg.email)) {
-        res.send("ERROR: el correo no es tiene el formato correcto");
-    }
-
-    usuarios.push(arg);
+    const user = await actions.create(userModel.model, arg);
     res.send(arg);
+});
+
+server.get('/menus', async (req, res) => {
+    const menus = await actions.get(menuModel.model);
+    res.send(menus);
+});
+
+server.get('/menu/:id', async (req, res) => {
+    const menus = await actions.getById(menuModel.model, req.params.id);
+    res.send(menus);
+});
+
+
+server.post('/menu', async (req, res) => {
+    const menu = await actions.create(menuModel.model, req.body);
+    res.send(req.body);
+});
+
+server.put('/menu/:id', async (req, res) => {
+    const menu = await actions.update(menuModel.model, req.params.id, req.body);
+    res.send(req.body);
+});
+
+server.delete('/menu/:id', async (req, res) => {
+    const menu = await actions.delete(menuModel.model, req.params.id);
+    res.send(req.body);
 });
 
 function validateEmail(email) {

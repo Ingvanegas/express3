@@ -6,23 +6,16 @@ module.exports.generateToken = function(data) {
     return jwt.sign(data, sign);
 }
 
-module.exports.decode = function(token) {
+function decode (token) {
     return jwt.verify(token, sign);
 }
 
-module.exports.verifyUser = function(req, res, usuarios) {
+module.exports.verifyUser = function(req, res, next) {
     var token = req.headers.authorization;
     if(token) {
-        var decoded = this.decode(token);
+        var decoded = decode(token, sign);
         if(decoded) {
-            var userName = decoded.userName;
-            var password = decoded.password;
-            var isAutenticated = usuarios.filter(user => user.user === userName && user.password === password);
-            if(isAutenticated.length > 0) {
-                return true;
-            }else {
-                return false;
-            }
+          next();
         }   
     }else {
         return false;
