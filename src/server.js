@@ -59,28 +59,28 @@ server.post('/register', async (req, res) => {
     res.send(arg);
 });
 
-server.get('/menus', async (req, res) => {
+server.get('/menus', authentication.verifyUser, async (req, res) => {
     const menus = await actions.get(menuModel.model);
     res.send(menus);
 });
 
-server.get('/menu/:id', async (req, res) => {
+server.get('/menu/:id', authentication.verifyUser, async (req, res) => {
     const menus = await actions.getById(menuModel.model, req.params.id);
     res.send(menus);
 });
 
 
-server.post('/menu', async (req, res) => {
+server.post('/menu', authentication.verifyUser, async (req, res) => {
     const menu = await actions.create(menuModel.model, req.body);
     res.send(req.body);
 });
 
-server.put('/menu/:id', async (req, res) => {
+server.put('/menu/:id', authentication.verifyUser, async (req, res) => {
     const menu = await actions.update(menuModel.model, req.params.id, req.body);
     res.send(req.body);
 });
 
-server.delete('/menu/:id', async (req, res) => {
+server.delete('/menu/:id', authentication.verifyUser,async (req, res) => {
     const menu = await actions.delete(menuModel.model, req.params.id);
     res.send(req.body);
 });
