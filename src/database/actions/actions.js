@@ -1,6 +1,14 @@
-module.exports.create = async (model, data) => {
-    const nuevousuario = new model(data);
-    await nuevousuario.save();
+const sequalize = require('sequelize');
+const database = new sequalize('mysql://root:password@localhost:3306/restaurant');
+
+module.exports.get = async (sentence, parameters) => {
+    return await database.query(sentence, 
+    { replacements: parameters, type: database.QueryTypes.SELECT });
+}
+
+module.exports.create = async (sentence, parameters) => {
+    return await database.query(sentence, 
+        { replacements: parameters, type: database.QueryTypes.INSERT });
 }
 
 module.exports.update = async (model, id, data) => {
@@ -9,12 +17,4 @@ module.exports.update = async (model, id, data) => {
 
 module.exports.delete = async (model, id) => {
     await model.findByIdAndDelete(id);
-}
-
-module.exports.get = async (model) => {
-    return await model.find();
-}
-
-module.exports.getById = async (model, _id) => {
-    return await model.find({_id});
 }

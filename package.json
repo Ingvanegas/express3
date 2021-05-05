@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon src/server.js",
+    "luisgarces": "nodemon src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
     "express-rate-limit": "^5.2.6",
     "helmet": "^4.5.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.12.6"
+    "mysql2": "^2.2.5",
+    "sequelize": "^6.6.2"
   }
 }

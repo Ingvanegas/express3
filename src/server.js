@@ -4,11 +4,7 @@ var helmet = require('helmet');
 var rateLimit = require('express-rate-limit');
 var authentication = require('./authentication');
 
-var manager = require('./database/manager/manager');
 var actions = require('./database/actions/actions');
-
-var menuModel = require('./database/models/menuModel');
-var userModel = require('./database/models/userModel');
 
 var apiLimiterLogin = rateLimit({
     max: 10
@@ -22,25 +18,18 @@ server.use(helmet());
 server.use(bodyParser());
 server.use('/', apiLimiterLogin);
 
-manager.connect();
-
 server.get('/', (req, res) => {
     res.send('Bienvenidos a mi api de express');
 });
 
-server.get('/users', authentication.verifyUser, async (req, res) => {
-    const usuarios = await actions.get(userModel.model);
-    res.send(usuarios); 
-})
-
 server.post('/login', async (req, res) => {
     var arg = req.body;
-    var userName = arg.user;
+    var user = arg.user;
     var password = arg.password;
-    const usuarios = await actions.get(userModel.model);
-    var isAutenticated = usuarios.filter(user => user.user === userName && user.password === password);
+    const usuarios = await actions.get('SELECT * FROM users WHERE userName = :user AND password = :password', { user, password })
+    var isAutenticated = usuarios.filter(userf => userf.userName === user && userf.password === password);
     if(isAutenticated.length > 0) {
-        var data = { userName, password };
+        var data = { user, password };
         var token = authentication.generateToken(data);
         res.send({
             result: 'OK',
@@ -59,36 +48,34 @@ server.post('/register', async (req, res) => {
     res.send(arg);
 });
 
-server.get('/menus', authentication.verifyUser, async (req, res) => {
-    const menus = await actions.get(menuModel.model);
-    res.send(menus);
+server.get('/users', authentication.verifyUser, async (req, res) => {
+    const users = await actions.get('SELECT * FROM users');
+    res.send(users);
 });
 
-server.get('/menu/:id', authentication.verifyUser, async (req, res) => {
-    const menus = await actions.getById(menuModel.model, req.params.id);
-    res.send(menus);
+server.get('/user/:id', authentication.verifyUser, async (req, res) => {
+    const user = await actions.get('SELECT * FROM users WHERE id = :id', { id: req.params.id });
+    res.send(user);
 });
 
 
-server.post('/menu', authentication.verifyUser, async (req, res) => {
-    const menu = await actions.create(menuModel.model, req.body);
-    res.send(req.body);
+server.post('/user', authentication.verifyUser, async (req, res) => {
+    const user = await actions.create(
+        `INSERT INTO users (userName, name, email, phone, address, password) 
+        VALUES (:userName, :name, :email, :phone, :address, :password)`, 
+        req.body);
+    res.send(user);
 });
 
-server.put('/menu/:id', authentication.verifyUser, async (req, res) => {
-    const menu = await actions.update(menuModel.model, req.params.id, req.body);
-    res.send(req.body);
-});
+// server.put('/user/:id', authentication.verifyUser, async (req, res) => {
+//     const user = await actions.update(menuModel.model, req.params.id, req.body);
+//     res.send(req.body);
+// });
 
-server.delete('/menu/:id', authentication.verifyUser,async (req, res) => {
-    const menu = await actions.delete(menuModel.model, req.params.id);
-    res.send(req.body);
-});
-
-function validateEmail(email) {
-    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-}
+// server.delete('/user/:id', authentication.verifyUser,async (req, res) => {
+//     const user = await actions.delete(menuModel.model, req.params.id);
+//     res.send(req.body);
+// });
 
 server.listen(port, () =>{
     console.log(`servidor correindo en el puerto ${port}`);
