@@ -15,6 +15,7 @@ module.exports.verifyUser = function(req, res, next) {
     if(token) {
         var decoded = decode(token, sign);
         if(decoded) {
+          req.user = decoded;  
           next();
         }   
     }else {
