@@ -10,7 +10,8 @@ var actions = require('./database/actions/actions');
 
 var swaggerDefinition = require('./swaggerDefinitons');
 
-var users = require('./routes/users')
+var users = require('./routes/users');
+var orders = require('./routes/orders');
 
 var apiLimiterLogin = rateLimit({
     max: 100
@@ -33,6 +34,7 @@ server.use('/', apiLimiterLogin);
 server.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 server.use('/', users);
+server.use('/', orders);
 
 server.get('/', (req, res) => {
     res.send('Bienvenidos a mi api de express');
@@ -66,32 +68,6 @@ server.post('/register', async (req, res) => {
     var arg = req.body;
     const user = await actions.create(userModel.model, arg);
     res.send(arg);
-});
-
-
-
-server.get('/orders', authentication.verifyUser, async (req, res) => {
-    const orders = await actions.get(`
-    SELECT s.Name as State, o.time, o.number, o.description, o.total,
-    u.Name as User, u.Addres, o.idpaymentType 
-    FROM \`Order\` as o 
-    Inner JOIN states as s ON (s.id = o.state) 
-    INNER JOIN user as u ON (u.idUser = o.idUser)
-    `);
-    res.send(orders);
-});
-
-server.patch('/orderState/:state', authentication.verifyUser, async (req, res) => {
-    const userLogged = req.user;
-    if(userLogged.role == 1) {
-        const order = await actions.update(
-            `UPDATE \`order\` SET state = :state`, 
-            { state: req.params.state });
-        res.send(user);
-    }else {
-        res.send('Error: role invalid');
-    }
-    
 });
 
 // server.put('/user/:id', authentication.verifyUser, async (req, res) => {
