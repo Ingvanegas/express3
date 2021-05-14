@@ -3,23 +3,43 @@ var bodyParser = require('body-parser');
 var helmet = require('helmet');
 var rateLimit = require('express-rate-limit');
 var authentication = require('./authentication');
+var swaggerJsDoc = require('swagger-jsdoc');
+var swaggerUi = require('swagger-ui-express');
 
 var actions = require('./database/actions/actions');
 
+var swaggerDefinition = require('./swaggerDefinitons');
+
+var users = require('./routes/users')
+
 var apiLimiterLogin = rateLimit({
-    max: 10
+    max: 100
 });
 
 var port = 3001;
+
+const options = {
+    ...swaggerDefinition,
+    apis: ['./src/routes/*.js']
+}
+
+const swaggerSpec = swaggerJsDoc(options);
 
 var server = express();
 
 server.use(helmet());
 server.use(bodyParser());
 server.use('/', apiLimiterLogin);
+server.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+server.use('/', users);
 
 server.get('/', (req, res) => {
     res.send('Bienvenidos a mi api de express');
+});
+
+server.get('/api-docs.json', (req, res) => {
+    res.send(swaggerSpec);
 });
 
 server.post('/login', async (req, res) => {
@@ -48,36 +68,7 @@ server.post('/register', async (req, res) => {
     res.send(arg);
 });
 
-server.get('/users', authentication.verifyUser, async (req, res) => {
-    const users = await actions.get('SELECT * FROM users');
-    res.send(users);
-});
 
-server.get('/user/:id', authentication.verifyUser, async (req, res) => {
-    const user = await actions.get('SELECT * FROM users WHERE id = :id', { id: req.params.id });
-    res.send(user);
-});
-
-server.get('/userByUsername/:userName', authentication.verifyUser, async (req, res) => {
-    const user = await actions.get('SELECT * FROM user WHERE UserName = :userName', { id: req.params.userName });
-    res.send(user);
-});
-
-server.post('/userAdmin', authentication.verifyUser, async (req, res) => {
-    const user = await actions.create(
-        `INSERT INTO user (UserName, Name, Password, Email, Phone, Addres, Type) 
-        VALUES (:userName, :name, :password, :email, :phone, :address, 1)`, 
-        req.body);
-        res.send(user);
-});
-
-server.post('/userClient', authentication.verifyUser, async (req, res) => {
-    const user = await actions.create(
-        `INSERT INTO user (UserName, Name, Password, Email, Phone, Addres, Type) 
-        VALUES (:userName, :name, :password, :email, :phone, :address, 2)`, 
-        req.body);
-    res.send(user);
-});
 
 server.get('/orders', authentication.verifyUser, async (req, res) => {
     const orders = await actions.get(`
